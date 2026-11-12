@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ClassTrack, a simple student assignment organizer prototype.">
+  <title>ClassTrack | Assignment Organizer</title>
+  <style>
+    :root { --ink:#233147; --muted:#65748a; --blue:#3466c6; --blue-weak:#ecf3ff; --border:#dfe5ed; --bg:#f5f7fb; --white:#fff; --green:#19845d; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; }
+    header { background:var(--white); border-bottom:1px solid var(--border); }
+    .topbar { max-width:1100px; margin:auto; padding:18px 24px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .brand { display:flex; gap:10px; align-items:center; font-size:22px; font-weight:800; letter-spacing:-.7px; }
+    .brand-icon { background:var(--blue); color:#fff; border-radius:9px; padding:6px 10px; font-size:17px; }
+    .phase { font-size:12px; color:#4667a9; background:var(--blue-weak); padding:6px 11px; border-radius:20px; font-weight:700; }
+    main { max-width:1100px; margin:0 auto; padding:42px 24px 70px; }
+    .intro h1 { font-size:34px; line-height:1.2; letter-spacing:-.9px; margin:0 0 8px; }
+    .intro p { color:var(--muted); margin:0 0 27px; }
+    .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:15px; margin-bottom:25px; }
+    .stat { background:#fff; border:1px solid var(--border); border-radius:12px; padding:20px 22px; }
+    .stat .number { font-size:30px; font-weight:800; margin:3px 0 0; letter-spacing:-.5px; }
+    .stat .label { color:var(--muted); font-size:14px; }
+    .layout { display:grid; grid-template-columns:355px minmax(0,1fr); gap:22px; align-items:start; }
+    .panel { background:#fff; border:1px solid var(--border); border-radius:13px; padding:24px; }
+    h2 { font-size:20px; letter-spacing:-.4px; margin:0 0 4px; }
+    .subtitle { font-size:13px; margin:0 0 22px; color:var(--muted); }
+    label { font-size:13px; font-weight:700; display:block; margin:14px 0 7px; }
+    input { display:block; width:100%; background:#fff; border:1px solid #cbd5e1; padding:11px 12px; font:inherit; border-radius:7px; color:var(--ink); outline-offset:2px; }
+    input:focus { border-color:var(--blue); outline:2px solid #bfd3fb; }
+    .button { border:0; border-radius:8px; font:inherit; font-size:14px; padding:10px 13px; font-weight:700; cursor:pointer; }
+    .primary { background:var(--blue); color:#fff; width:100%; margin-top:22px; min-height:43px; }
+    .primary:hover { background:#2654ab; }
+    .secondary { background:#eef1f6; color:#35445a; }
+    .tiny { font-size:12px; border:1px solid #d8e0eb; background:#fff; color:#465870; padding:6px 9px; border-radius:6px; cursor:pointer; }
+    .tiny:hover { background:#f2f5fa; }
+    .danger { color:#ac3742; }
+    .notice { color:var(--muted); background:#f7f9fc; border-radius:7px; padding:11px 12px; font-size:12px; margin-top:16px; }
+    .list-head { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px; margin-bottom:18px; }
+    .count { font-size:13px; color:var(--muted); }
+    .assignment { display:grid; grid-template-columns:20px minmax(0,1fr) auto; gap:13px; align-items:start; border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:11px; }
+    .assignment input[type=checkbox] { width:18px; height:18px; cursor:pointer; margin:5px 0 0; accent-color:var(--green); }
+    .assignment strong { display:block; font-size:15px; overflow-wrap:anywhere; }
+    .assignment .meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px 9px; color:var(--muted); font-size:12px; margin-top:8px; }
+    .course { display:inline-block; color:#4667a9; background:var(--blue-weak); padding:3px 7px; border-radius:5px; }
+    .assignment .actions { display:flex; flex-direction:column; gap:6px; }
+    .assignment.complete strong { text-decoration:line-through; color:#8490a0; }
+    .empty { text-align:center; padding:55px 10px; color:var(--muted); }
+    .pill-due { color:#a25518; }
+    .pill-overdue { color:#b43641; font-weight:700; }
+    footer { text-align:center; color:#8b96a7; padding:0 20px 30px; font-size:12px; }
+    @media(max-width:780px) { .layout { grid-template-columns:1fr; } main { padding:27px 16px 45px; } .topbar { padding:16px; } .intro h1 { font-size:29px; } .stats { gap:9px; } .stat { padding:14px; } .stat .number { font-size:25px; } .stat .label { font-size:12px; } .panel { padding:19px; } }
+    @media(max-width:420px) { .assignment { grid-template-columns:20px minmax(0,1fr); } .assignment .actions { grid-column:2; flex-direction:row; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar"><div class="brand"><span class="brand-icon">✓</span>ClassTrack</div><span class="phase">Capstone prototype · Week 04</span></div>
+  </header>
+  <main>
+    <div class="intro">
+      <h1>Stay on top of your assignments.</h1>
+      <p>Keep track of classes, due dates, and what's already done, all in one place.</p>
+    </div>
+    <section class="stats" aria-label="Assignment summary">
+      <div class="stat"><div class="label">Total assignments</div><div class="number" id="total">0</div></div>
+      <div class="stat"><div class="label">Still to do</div><div class="number" id="todo">0</div></div>
+      <div class="stat"><div class="label">Completed</div><div class="number" id="done">0</div></div>
+    </section>
+    <div class="layout">
+      <section class="panel" aria-labelledby="form-title">
+        <h2 id="form-title">Add an assignment</h2>
+        <p class="subtitle" id="form-subtitle">Enter the details below to add something to your list.</p>
+        <form id="form">
+          <label for="title">Assignment name</label>
+          <input id="title" type="text" placeholder="Example: Finish discussion post" required maxlength="90">
+          <label for="course">Class / course</label>
+          <input id="course" type="text" placeholder="Example: CMPA 4304" required maxlength="45">
+          <label for="due">Due date</label>
+          <input id="due" type="date" required>
+          <button type="submit" class="button primary" id="submit">+ Add assignment</button>
+          <button type="button" class="button secondary" id="cancel" hidden style="width:100%;margin-top:8px;">Cancel edit</button>
+        </form>
+        <p class="notice">This is an early version for CMPA 4304. Your changes are saved in this browser. The sample assignments are just examples.</p>
+      </section>
+      <section class="panel" aria-labelledby="list-title">
+        <div class="list-head"><div><h2 id="list-title">My assignments</h2><div class="subtitle" style="margin:3px 0 0">Check off tasks as you finish them.</div></div><div id="list-count" class="count"></div></div>
+        <div id="assignments" aria-live="polite"></div>
+      </section>
+    </div>
+  </main>
+  <footer>ClassTrack · Early working prototype for CMPA 4304</footer>
+  <script>
+  (() => {
+    'use strict';
+    const KEY = 'classtrack_v1_assignments';
+    const $ = id => document.getElementById(id);
+    let editingId = null;
+    function dateAfter(n) { const d = new Date(); d.setDate(d.getDate()+n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    const demo = [
+      {id:'example-1',title:'Make a first ClassTrack layout',course:'CMPA 4304',due:dateAfter(2),complete:true},
+      {id:'example-2',title:'Test adding assignments',course:'CMPA 4304',due:dateAfter(5),complete:false},
+      {id:'example-3',title:'Reply to classmates',course:'Example course',due:dateAfter(8),complete:false}
+    ];
+    function load() {
+      try {
+        const saved = localStorage.getItem(KEY);
+        return saved === null ? demo : JSON.parse(saved);
+      } catch { return demo; }
+    }
+    let items = load();
+    function save() { try {localStorage.setItem(KEY,JSON.stringify(items));} catch {} }
+    function safe(s) { return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function formatted(d) { const [y,m,day] = d.split('-').map(Number); return new Date(y,m-1,day).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+    function draw() {
+      $('total').textContent = items.length;
+      $('todo').textContent = items.filter(a=>!a.complete).length;
+      $('done').textContent = items.filter(a=>a.complete).length;
+      $('list-count').textContent = `${items.length} item${items.length===1?'':'s'}`;
+      const ordered = [...items].sort((a,b)=>Number(a.complete)-Number(b.complete) || a.due.localeCompare(b.due));
+      $('assignments').innerHTML = ordered.length ? ordered.map(a=>{
+        const overdue = !a.complete && a.due < dateAfter(0);
+        const soon = !a.complete && a.due <= dateAfter(3) && !overdue;
+        return `<article class="assignment ${a.complete?'complete':''}">
+          <input aria-label="Mark ${safe(a.title)} ${a.complete?'incomplete':'completed'}" type="checkbox" data-action="complete" data-id="${safe(a.id)}" ${a.complete?'checked':''}>
+          <div><strong>${safe(a.title)}</strong><div class="meta"><span class="course">${safe(a.course)}</span><span class="${overdue?'pill-overdue':soon?'pill-due':''}">${overdue?'Overdue · ':''}Due ${formatted(a.due)}</span></div></div>
+          <div class="actions"><button type="button" class="tiny" data-action="edit" data-id="${safe(a.id)}">Edit</button><button type="button" class="tiny danger" data-action="delete" data-id="${safe(a.id)}">Delete</button></div>
+        </article>`;
+      }).join('') : '<p class="empty">No assignments yet. Add your first one!</p>';
+    }
+    function clearEdit() { editingId=null; $('form').reset(); $('form-title').textContent='Add an assignment'; $('submit').textContent='+ Add assignment'; $('cancel').hidden=true; }
+    $('form').addEventListener('submit', ev=>{
+      ev.preventDefault();
+      const title=$('title').value.trim(), course=$('course').value.trim(), due=$('due').value;
+      if(!title || !course || !due) return;
+      if(editingId) {const a=items.find(x=>x.id===editingId);if(a) Object.assign(a,{title,course,due});}
+      else items.push({id:`a-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,title,course,due,complete:false});
+      save(); clearEdit(); draw();
+    });
+    $('cancel').addEventListener('click', clearEdit);
+    $('assignments').addEventListener('click', ev=>{
+      const button = ev.target.closest('button[data-action]');
+      if(!button) return;
+      const a=items.find(x=>x.id===button.dataset.id); if(!a) return;
+      if(button.dataset.action==='delete') {
+        if(!confirm(`Delete "${a.title}"?`)) return;
+        items=items.filter(x=>x.id!==a.id); if(editingId===a.id) clearEdit(); save(); draw();
+      } else if(button.dataset.action==='edit') {
+        editingId=a.id; $('title').value=a.title; $('course').value=a.course; $('due').value=a.due;
+        $('form-title').textContent='Edit assignment'; $('submit').textContent='Save changes'; $('cancel').hidden=false;
+        $('title').focus();
+      }
+    });
+    $('assignments').addEventListener('change', ev=>{
+      if(ev.target.dataset.action !== 'complete') return;
+      const a=items.find(x=>x.id===ev.target.dataset.id); if(!a) return;
+      a.complete=ev.target.checked; save(); draw();
+    });
+    save(); draw();
+  })();
+  </script>
+</body>
+</html>
